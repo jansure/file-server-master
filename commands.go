@@ -44,8 +44,8 @@ func (c *Command) GetPathParam(s string) string {
 	return strings.Trim(c.Params[s], "/")
 }
 
-func (c *Command) GetChildPathParam(s string) string {
-	return strings.Trim(c.Params[s], "/") + "/"
+func (c *Command) GetChildPathParam() string {
+	return strings.Trim(c.Params["childDirName"], "/") + "/"
 }
 
 
@@ -92,16 +92,21 @@ func list_files(c *Command) int {
 		c.status = 1
 		return 1
 	}
+	if len(c.GetChildPathParam()) == 0  {
+		c.Stderr = "Params childDirName is empty"
+		c.status = 1
+		return 1
+	}
 	var aout DirFiles
 	for _, dir := range dirs {
-		d := c.GetPath()  + dir
+		d := c.GetPath()  + dir + c.GetChildPathParam()
 		files, err := ioutil.ReadDir(d)
 		if err != nil {
 			c.Stderr = err.Error()
 			c.status = 1
 			return 1
 		}
-		f, err := os.Stat(d)
+		f, err := os.Stat(c.GetPath()  + dir )
 		if err != nil {
 			c.Stderr = err.Error()
 			c.status = 1
