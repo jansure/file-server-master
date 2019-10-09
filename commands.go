@@ -99,7 +99,7 @@ func list_files(c *Command) int {
 	}
 	var aout DirFiles
 	for _, dir := range dirs {
-		d := c.GetPath()  + dir + c.GetChildPathParam()
+		d := getTrimDir(c.GetPath()  + dir) + c.GetChildPathParam()
 		files, err := ioutil.ReadDir(d)
 		if err != nil {
 			c.Stderr = err.Error()

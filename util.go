@@ -31,6 +31,10 @@ var txtExt = map[string]bool{
 // Take from here
 // https://code.google.com/p/go/source/browse/godoc/util/util.go?repo=tools
 
+func getTrimDir(s string) string {
+	return strings.TrimRight(s, "/") + "/"
+}
+
 func IsTextFile(filename string) bool {
 
 	if istxt, found := txtExt[filepath.Ext(filename)]; found {
