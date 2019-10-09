@@ -28,6 +28,14 @@ fMgr.controller("ListCtr", function($scope, $http, $location,
                 if(res.data=="null")
                     $scope.Files = []
                 else
+                    res.data = res.data.map(r => {
+                        r.Name = r.name
+                r.IsDir = r.isDir
+                r.IsText = r.isText
+                r.ModTime = r.modTime
+                r.Size = r.size
+                return r
+                    })
                     $scope.Files = res.data
               
                 $scope.iFiles = {}
