@@ -248,7 +248,7 @@ fMgr.controller("ListCtr", function($scope, $http, $location,
                 document.getElementById('file_upload_unzip').removeEventListener('change', uploadFilesUnZip);
                 document.getElementById("file_upload_unzip").value = "";
                 Flash.success("File uploaded and unzip")
-                get_data()//上传成功后重新获取数据列表
+                get_data()
              };
 
              xhr.onerror = function(e) {
@@ -392,7 +392,7 @@ fMgr.controller("ListCtr", function($scope, $http, $location,
         var res = confirm("Are you sure?")
         if(res) {
             ServerCommand.get({
-                action: 'delete',
+                action: 'delete_file',
                 paramslist: [$scope.Path + item]
             }, "File deleted!", get_data)
         }
@@ -408,7 +408,7 @@ fMgr.controller("ListCtr", function($scope, $http, $location,
         })
 
         ServerCommand.get({
-            action: 'delete',
+            action: 'delete_file',
             paramslist: items
         }, "Files deleted!", get_data)
     }
