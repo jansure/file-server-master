@@ -281,6 +281,12 @@ func delete_dir(c *Command) int {
 	has_errors := false
 	for k := range files {
 		f := c.GetPath() + strings.Trim(files[k], "/")
+		if !Exists(f) {
+			errs = append(errs, f + " is not existed")
+			has_errors = true
+			continue
+		}
+
 		err := os.RemoveAll(f)
 		if err != nil {
 			errs = append(errs, err.Error())
@@ -292,8 +298,9 @@ func delete_dir(c *Command) int {
 		c.status = 1
 		c.Stderr = strings.Join(errs, ",")
 		return 1
+	} else {
+		return 0
 	}
-	return 0
 
 }
 
