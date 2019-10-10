@@ -24,28 +24,27 @@ fMgr.controller("ListCtr", function($scope, $http, $location,
         $http.get($scope.Path + "?format=json")
             .then(function(res){
                 $scope.data_loading = false
-                //console.log(res)
                 if(res.data=="null")
-                    $scope.Files = []
-                else
-                    res.data = res.data.map(r => {
+                res.data = []
+                else {
+                    res.data = res.data.map(r=>{
                         r.Name = r.name
-                r.IsDir = r.isDir
-                r.IsText = r.isText
-                r.ModTime = r.modTime
-                r.Size = r.size
-                return r
+                        r.IsDir = r.isDir
+                        r.IsText = r.isText
+                        r.ModTime = r.modTime
+                        r.Size = r.size
+                        return r
                     })
-                    $scope.Files = res.data
-              
+                }
+                
+                $scope.Files = res.data
                 $scope.iFiles = {}
                 $scope.idFiles = {}
                 var idc = 0;
                 angular.forEach($scope.Files, function(item){
-                    
                     $scope.iFiles[item.Name] = item
                     item.ModTime = new Date(item.ModTime)
-                    if(item.Name.indexOf(".") === 0) item.IsHidden = true;
+                    if(item.Name && item.Name.indexOf(".") === 0) item.IsHidden = true;
                     else item.IsHidden = false
 
                     item.Id = idc++;
@@ -130,14 +129,13 @@ fMgr.controller("ListCtr", function($scope, $http, $location,
                 url: get_route(i)
             }
 
-
             result.push(obj)
         }
+
         return result
     }
 
     $scope.$on('$locationChangeSuccess', function(){
-        //console.log('ara?')
         var newl = $location.path()
         $scope.OldPath = $scope.Path
          if( $scope.Path != newl ) {
@@ -230,11 +228,53 @@ fMgr.controller("ListCtr", function($scope, $http, $location,
 
 
         document.getElementById('file_upload').addEventListener('change', uploadFiles, false)
-        document.getElementById('file_upload').click();
+        var event = new MouseEvent('click')
+        document.getElementById('file_upload').dispatchEvent(event)
+        // document.getElementById('file_upload').click();
         //console.log("file upload")
     }
 
+    $scope.AddFilesAndUnzip = function() {
+        var uploadFilesUnZip = function(evt){
+            var files = evt.target.files;
+            var formData = new FormData( document.getElementById('upload_files_unzip') );
+            var xhr = new XMLHttpRequest();
+            //$scope.Path
+            var savePath = $scope.Path
+            xhr.open('PUT', "/?format=zip&destPath="+savePath+"&unzip=true", true);
+            
+            xhr.onload = function(e) {
+                //console.log(e)
+                document.getElementById('file_upload_unzip').removeEventListener('change', uploadFilesUnZip);
+                document.getElementById("file_upload_unzip").value = "";
+                Flash.success("File uploaded and unzip")
+                get_data()//上传成功后重新获取数据列表
+             };
 
+             xhr.onerror = function(e) {
+                Flash.error("Error uploading file and unzip")
+             }
+
+            xhr.upload.onprogress = function(e) {
+                //console.log(e)
+                if (e.lengthComputable) {
+                    //console.log( (e.loaded / e.total) * 100 )
+                    $scope.flash.message = "Uploading... " + parseInt((e.loaded / e.total) * 100) + "%"
+                    $scope.$apply()
+                }
+             }
+
+             xhr.send(formData)
+             $scope.flash = { type:"bg-success", message: "Uploading file... " }
+
+        };
+
+
+        document.getElementById('file_upload_unzip').addEventListener('change', uploadFilesUnZip, false)
+        var event = new MouseEvent('click')
+        document.getElementById('file_upload_unzip').dispatchEvent(event)
+        //console.log("file upload")
+    }
     
     var ieditor
 

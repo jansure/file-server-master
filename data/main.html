@@ -28,7 +28,7 @@
   <div class="container">
     <div class="row hidden-xs">
         <div class="col-md-6">
-        <h3 id="title">FileManagerServer</h3>
+        <h3 id="title">FileManager</h3>
         </div>
     </div>
     
@@ -76,6 +76,10 @@
 <form id="upload_files" style="display:none" enctype="multipart/form-data">
 <input type="file" id="file_upload" name="files" multiple style="display:none" >
 </form>
+<form id="upload_files_unzip" style="display:none" enctype="multipart/form-data">
+<input type="file" id="file_upload_unzip" name="uploadfile" multiple style="display:none" >
+</form>
+
  <form role="form">
     <div class="col-md-6 col-xs-6">
         
@@ -90,6 +94,10 @@
         <inline-modal action="new_file" btntext="Add File" 
             icon="fa fa-file" title="Filename:" handler="get_data()" 
             message="File Created!" path="Path"></inline-modal>
+
+        <button type="button" class="btn btn-info btn-sm" type="file" ng-click="AddFilesAndUnzip()"
+            tooltip-placement="top" tooltip="Upload Files And Unzip"><i class="fa fa-upload"> </i> <span class="hidden-xs">&nbsp; Upload and Unzip</span></button>
+    
 
         <button ng-hide="SysCmdDisabled==true" type="button" class="btn btn-info btn-sm" ng-click="ShowCommands()"
             tooltip-placement="top" tooltip="Execute Command"><i class="fa fa-bolt"> </i> <span class="hidden-xs">&nbsp; Exec</span></button>
@@ -141,16 +149,16 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="item in Files|filter:query|filter:{'IsDir':ff}|filter:{'IsHidden':hidden}" ts-repeat id="r{{ $index }}" ng-class="{selected: Cursor == $index}" _name="{{ item.name }}">
-                <td width="20" class="hidden-xs cursor"><input type="checkbox" name="checkboxs[]" value="{{ item.name }}"  id="chk_{{ item.Id }}"
+            <tr ng-repeat="item in Files|filter:query|filter:{'IsDir':ff}|filter:{'IsHidden':hidden}" ts-repeat id="r{{ $index }}" ng-class="{selected: Cursor == $index}" _name="{{ item.Name }}">
+                <td width="20" class="hidden-xs cursor"><input type="checkbox" name="checkboxs[]" value="{{ item.Name }}"  id="chk_{{ item.Id }}"
                     ng-click="CheckboxToggle(this, $event)" /></td>
-                <td width="20"><i class="fa fa-folder-open" ng-show="item.isDir"></i>
-                        <i ng-hide="item.isDir" class="fa fa-file-o"></i></td>
+                <td width="20"><i class="fa fa-folder-open" ng-show="item.IsDir"></i>
+                        <i ng-hide="item.IsDir" class="fa fa-file-o"></i></td>
                 
                 <td inline-edit item="item" path="Path"> </td>
                 
-                <td width="100" class="hidden-xs">{{ item.size|bytes }}</td>
-                <td width="140" class="ModTime hidden-xs">{{ item.modTime|date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                <td width="100" class="hidden-xs">{{ item.Size|bytes }}</td>
+                <td width="140" class="ModTime hidden-xs">{{ item.ModTime|date:'dd/MM/yyyy HH:mm:ss' }}</td>
                 <td class="actions">
                 
                     
@@ -164,18 +172,18 @@
                             <i class="fa fa-bars"> </i>
                         </a>
                         <ul class="dropdown-menu" role="menu">
-                            <li><a ng-click="CopyFile(item.name)" href="#">Copy</a></li>
-                            <li><a ng-click="DeleteFile(item.name)" href="#">Delete</a></li>
-                            <li ng-if="!item.isDir"><a ng-click="EditFile(item.name)" href="#">Edit</a></li>
-                            <li><a ng-click="RenameFile(item.name)" href="#">Rename</a></li>
-                            <li><a ng-click="Compress(item.name)" href="#">Compress</a></li>
-                            <li ng-if="item.isDir"><a href="{{ item.name }}/?format=zip">Download as Zip</a></li>
+                            <li><a ng-click="CopyFile(item.Name)" href="#">Copy</a></li>
+                            <li><a ng-click="DeleteFile(item.Name)" href="#">Delete</a></li>
+                            <li ng-if="!item.IsDir"><a ng-click="EditFile(item.Name)" href="#">Edit</a></li>
+                            <li><a ng-click="RenameFile(item.Name)" href="#">Rename</a></li>
+                            <li><a ng-click="Compress(item.Name)" href="#">Compress</a></li>
+                            <li ng-if="item.IsDir"><a href="{{ item.Name }}/?format=zip">Download as Zip</a></li>
                             
                         </ul>
 
                     </div>
 
-                    <span ng-if="item.isText" ng-click="EditFile(item.name)" class="fa fa-pencil delete hidden-xs" tooltip-placement="top" tooltip="Edit" > </span>
+                    <span ng-if="item.IsText" ng-click="EditFile(item.Name)" class="fa fa-pencil delete hidden-xs" tooltip-placement="top" tooltip="Edit" > </span>
 
                 </td>
             </tr>
@@ -279,9 +287,9 @@
 <script type="text/ng-template" id="/inline-edit.html">
     <td ng-mouseenter="roll=true" ng-mouseleave="roll=false" class="tdrename"
         ng-click="Show($event)">    
-        <a href="{{ Path }}{{ item.name }}" target="_self"
-            ng-if="!item.isDir">{{ item.name }}</a>
-        <a  ng-click="Go(item.name)" ng-if="item.isDir" class="dir">{{ item.name }}</a><span class="visible-xs small">{{ item.modTime|date:'dd/MM/yyyy HH:mm:ss' }} | {{ item.size|bytes }}</span>
+        <a href="{{ Path }}{{ item.Name }}" target="_self"
+            ng-if="!item.IsDir">{{ item.Name }}</a>
+        <a  ng-click="Go(item.Name,$event)" ng-if="item.IsDir" class="dir">{{ item.Name }}</a><span class="visible-xs small">{{ item.ModTime|date:'dd/MM/yyyy HH:mm:ss' }} | {{ item.Size|bytes }}</span>
     
 
     <div class="col-md-12 renameinput inline-form" ng-show="showrename==true">
@@ -290,7 +298,7 @@
             ng-enter="SaveItem()" 
             ng-esc="CloseInline()"
              
-            id="file_{{ item.name }}"
+            id="file_{{ item.Name }}"
             />
         <!--<button class="btn btn-info btn-xs" ng-click="SaveItem()"><i class="fa fa-save"></i></button>
         <button class="btn btn-default btn-xs" ng-click="showrename=false"><i class="fa fa-times"></i></button>-->
